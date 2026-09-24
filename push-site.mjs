@@ -10,7 +10,8 @@ const authValue = credential.authMode === 'http_extra_header'
   ? `Bearer ${credential.token}`
   : credential.token;
 
-const child = spawn('git', ['push', '--set-upstream', 'origin', credential.branch], {
+const safeDirectory = process.cwd().replaceAll('\\', '/');
+const child = spawn('git', ['-c', `safe.directory=${safeDirectory}`, 'push', '--set-upstream', 'origin', credential.branch], {
   stdio: ['ignore', 'inherit', 'inherit'],
   env: {
     ...process.env,
