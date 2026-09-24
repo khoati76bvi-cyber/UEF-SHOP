@@ -1,4 +1,4 @@
-# NOVA WEAR — Online Clothing Store Demo
+# UEF SHOP — Online Clothing Store Demo
 
 Bản demo website phục vụ báo cáo cuối kỳ môn Công nghệ phần mềm.
 

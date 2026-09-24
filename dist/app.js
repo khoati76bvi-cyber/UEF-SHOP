@@ -12,10 +12,10 @@ const defaultProducts = [
 ];
 
 const seedOrders = [
-  { id: 'NW-260918', date: '18/09/2026', customer: 'Nguyễn Minh Anh', email: 'user@demo.vn', total: 1008000, status: 'shipped', payment: 'Ví điện tử', items: [{ productId: 1, qty: 1, size: 'M' }, { productId: 5, qty: 1, size: 'L' }] },
-  { id: 'NW-260914', date: '14/09/2026', customer: 'Trần Ngọc Lan', email: 'lan@example.com', total: 1428000, status: 'processing', payment: 'COD', items: [{ productId: 4, qty: 1, size: 'M' }, { productId: 3, qty: 1, size: '29' }] },
-  { id: 'NW-260910', date: '10/09/2026', customer: 'Lê Quốc Bảo', email: 'bao@example.com', total: 1099000, status: 'completed', payment: 'Thẻ ngân hàng', items: [{ productId: 6, qty: 1, size: '41' }] },
-  { id: 'NW-260903', date: '03/09/2026', customer: 'Phạm Hà My', email: 'my@example.com', total: 858000, status: 'canceled', payment: 'COD', items: [{ productId: 1, qty: 1, size: 'S' }, { productId: 7, qty: 1, size: 'Một kích cỡ' }] }
+  { id: 'UEF-260918', date: '18/09/2026', customer: 'Nguyễn Minh Anh', email: 'user@demo.vn', total: 1008000, status: 'shipped', payment: 'Ví điện tử', items: [{ productId: 1, qty: 1, size: 'M' }, { productId: 5, qty: 1, size: 'L' }] },
+  { id: 'UEF-260914', date: '14/09/2026', customer: 'Trần Ngọc Lan', email: 'lan@example.com', total: 1428000, status: 'processing', payment: 'COD', items: [{ productId: 4, qty: 1, size: 'M' }, { productId: 3, qty: 1, size: '29' }] },
+  { id: 'UEF-260910', date: '10/09/2026', customer: 'Lê Quốc Bảo', email: 'bao@example.com', total: 1099000, status: 'completed', payment: 'Thẻ ngân hàng', items: [{ productId: 6, qty: 1, size: '41' }] },
+  { id: 'UEF-260903', date: '03/09/2026', customer: 'Phạm Hà My', email: 'my@example.com', total: 858000, status: 'canceled', payment: 'COD', items: [{ productId: 1, qty: 1, size: 'S' }, { productId: 7, qty: 1, size: 'Một kích cỡ' }] }
 ];
 
 const seedUsers = [
@@ -30,15 +30,15 @@ function loadStore(key, fallback) {
 }
 function saveStore(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
 
-let products = loadStore('nw_products', defaultProducts);
-let cart = loadStore('nw_cart', []);
-let orders = loadStore('nw_orders', seedOrders);
-let users = loadStore('nw_users', seedUsers);
-let favorites = loadStore('nw_favorites', []);
-let session = loadStore('nw_session', null);
-let profile = loadStore('nw_profile', { name: 'Nguyễn Minh Anh', email: 'user@demo.vn', phone: '090 123 4567', address: '123 Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh' });
+let products = loadStore('uef_products', defaultProducts);
+let cart = loadStore('uef_cart', []);
+let orders = loadStore('uef_orders', seedOrders);
+let users = loadStore('uef_users', seedUsers);
+let favorites = loadStore('uef_favorites', []);
+let session = loadStore('uef_session', null);
+let profile = loadStore('uef_profile', { name: 'Nguyễn Minh Anh', email: 'user@demo.vn', phone: '090 123 4567', address: '123 Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh' });
 
-let shopState = { search: '', category: 'Tất cả', sort: 'featured' };
+let shopState = { search: '', category: 'Tất cả', size: '', saleOnly: false, sort: 'featured' };
 let accountTab = 'orders';
 let adminTab = 'dashboard';
 let adminAddOpen = false;
@@ -91,7 +91,8 @@ function openCart() { closeAll(); renderCart(); showOverlay(); cartDrawer.classL
 
 function updateHeader() {
   document.querySelector('#cartCount').textContent = cartCount();
-  document.querySelector('#sessionBtn').textContent = session ? session.name.split(' ').slice(-1)[0] : 'Đăng nhập';
+  document.querySelector('#favCount').textContent = favorites.length;
+  document.querySelector('#sessionBtn').textContent = session ? session.name.split(' ').slice(-1)[0].toUpperCase() : 'TÀI KHOẢN';
   const route = getRoute();
   document.querySelectorAll('[data-route-link]').forEach(link => link.classList.toggle('active', link.dataset.routeLink === route));
 }
@@ -110,21 +111,21 @@ function productCard(product) {
   const favorite = favorites.includes(product.id);
   return `<article class="product-card">
     <div class="product-image" style="${spriteStyle(product)}" data-product="${product.id}" role="button" tabindex="0" aria-label="Xem ${product.name}">
-      ${product.badge ? `<span class="product-badge">${product.badge}</span>` : ''}
+      ${product.oldPrice ? `<span class="product-badge">GIẢM ${Math.round((1 - product.price / product.oldPrice) * 100)}%</span>` : product.badge ? `<span class="product-badge">${product.badge}</span>` : ''}
       <button class="favorite-button ${favorite ? 'active' : ''}" data-favorite="${product.id}" aria-label="${favorite ? 'Bỏ yêu thích' : 'Thêm yêu thích'}">${favorite ? '♥' : '♡'}</button>
     </div>
     <div class="product-info">
-      <div class="product-meta"><span>${product.category}</span><span>Còn ${product.stock}</span></div>
+      <div class="product-meta"><span>UEF SHOP</span><span>${product.stock > 0 ? 'CÒN HÀNG' : 'HẾT HÀNG'}</span></div>
       <h3>${product.name}</h3>
       <div class="price-line"><strong>${VND.format(product.price)}</strong>${product.oldPrice ? `<del>${VND.format(product.oldPrice)}</del>` : ''}</div>
-      <div class="card-actions"><button class="button dark" data-add="${product.id}">Thêm vào giỏ</button><button class="square-button" data-product="${product.id}" aria-label="Xem chi tiết">${icons.arrow}</button></div>
+      <div class="card-actions"><button class="button primary" data-add="${product.id}">THÊM VÀO GIỎ</button><button class="square-button" data-product="${product.id}" aria-label="Xem chi tiết">${icons.arrow}</button></div>
     </div>
   </article>`;
 }
 
 function filteredProducts() {
   const query = shopState.search.trim().toLowerCase();
-  let list = products.filter(p => p.visible !== false && (shopState.category === 'Tất cả' || p.category === shopState.category) && (!query || `${p.name} ${p.category} ${p.color}`.toLowerCase().includes(query)));
+  let list = products.filter(p => p.visible !== false && (shopState.category === 'Tất cả' || p.category === shopState.category) && (!shopState.size || p.sizes.includes(shopState.size)) && (!shopState.saleOnly || p.oldPrice) && (!query || `${p.name} ${p.category} ${p.color}`.toLowerCase().includes(query)));
   if (shopState.sort === 'price-asc') list.sort((a, b) => a.price - b.price);
   if (shopState.sort === 'price-desc') list.sort((a, b) => b.price - a.price);
   if (shopState.sort === 'name') list.sort((a, b) => a.name.localeCompare(b.name, 'vi'));
@@ -134,36 +135,64 @@ function filteredProducts() {
 function renderShop() {
   const categories = ['Tất cả', ...new Set(products.filter(p => p.visible !== false).map(p => p.category))];
   const list = filteredProducts();
-  app.innerHTML = `<div class="page-shell">
-    <section class="shop-hero">
-      <div class="hero-copy">
-        <span class="eyebrow">NEW SEASON / 2026</span>
-        <h1>Mặc chất.<br>Sống riêng.</h1>
-        <p>Những thiết kế tối giản, thoải mái và linh hoạt cho nhịp sống thành thị.</p>
-        <a class="button primary" href="#catalog">Khám phá bộ sưu tập ${icons.arrow}</a>
-        <div class="hero-stats"><span><strong>08</strong>Sản phẩm mới</span><span><strong>14 ngày</strong>Đổi trả dễ dàng</span></div>
+  app.innerHTML = `<div class="uef-shop-page">
+    <section class="flash-hero" aria-labelledby="flashTitle">
+      <div class="flash-copy">
+        <div class="flash-label"><span>FLASH SALE</span><b>HOT DEAL</b></div>
+        <h1 id="flashTitle"><span>DEAL ĐỈNH CHO</span><br><span>NHỊP SỐNG UEF</span></h1>
+        <p>Thiết kế năng động cho lịch học, hoạt động câu lạc bộ và những buổi xuống phố.</p>
+        <div class="flash-actions"><a class="button primary" href="#catalog">XEM TẤT CẢ DEAL ${icons.arrow}</a><strong>■ SỐ LƯỢNG CÓ HẠN</strong></div>
       </div>
-      <div class="hero-art" role="img" aria-label="Bộ sưu tập thời trang NOVA WEAR"></div>
+      <div class="flash-visual" role="img" aria-label="Bộ sưu tập thời trang UEF SHOP">
+        <div class="live-tag">● LIVE</div>
+        <div class="countdown-card"><span>KẾT THÚC SAU</span><div class="countdown-grid"><b><em data-countdown="days">03</em><small>NGÀY</small></b><b><em data-countdown="hours">08</em><small>GIỜ</small></b><b><em data-countdown="minutes">24</em><small>PHÚT</small></b><b class="hot"><em data-countdown="seconds">16</em><small>GIÂY</small></b></div></div>
+      </div>
+    </section>
+    <div class="signal-marquee" aria-hidden="true">UEF SHOP · SĂN DEAL · PHỐI CHẤT · CÒN HÀNG · CAMPUS DROP · UEF SHOP · SĂN DEAL · PHỐI CHẤT ·</div>
+
+    <section class="catalog-banner">
+      <span><b>TRANG CHỦ</b> / BỘ SƯU TẬP 2026</span>
+      <h2>TẤT CẢ SẢN PHẨM</h2>
     </section>
 
-    <section id="catalog">
-      <div class="section-head"><div><span class="eyebrow">SHOP THE EDIT</span><h2>Sản phẩm nổi bật</h2></div><p>Chọn các thiết kế có thể kết hợp cùng nhau để tạo nên tủ đồ gọn gàng và linh hoạt.</p></div>
-      <div class="catalog-toolbar">
-        <label class="search-box">${icons.search}<input id="productSearch" type="search" placeholder="Tìm áo, quần, phụ kiện..." value="${shopState.search}" aria-label="Tìm kiếm sản phẩm" /></label>
-        <select id="categorySelect" class="select-control" aria-label="Danh mục"><option value="Tất cả">Tất cả danh mục</option>${categories.slice(1).map(c => `<option ${shopState.category === c ? 'selected' : ''}>${c}</option>`).join('')}</select>
-        <select id="sortSelect" class="select-control" aria-label="Sắp xếp"><option value="featured">Nổi bật</option><option value="price-asc" ${shopState.sort === 'price-asc' ? 'selected' : ''}>Giá tăng dần</option><option value="price-desc" ${shopState.sort === 'price-desc' ? 'selected' : ''}>Giá giảm dần</option><option value="name" ${shopState.sort === 'name' ? 'selected' : ''}>Tên A–Z</option></select>
+    <section class="catalog-layout" id="catalog">
+      <aside class="catalog-sidebar" aria-label="Bộ lọc sản phẩm">
+        <div class="filter-group"><strong>TÌM SẢN PHẨM</strong><label class="search-box">${icons.search}<input id="productSearch" type="search" placeholder="Áo, quần, phụ kiện..." value="${shopState.search}" aria-label="Tìm kiếm sản phẩm" /></label></div>
+        <div class="filter-group"><strong>LOẠI SẢN PHẨM</strong><div class="filter-list">${categories.map(c => `<button class="filter-option ${shopState.category === c ? 'active' : ''}" data-category="${c}"><span></span>${c}</button>`).join('')}</div></div>
+        <div class="filter-group"><strong>TÌNH TRẠNG</strong><button class="filter-option ${shopState.saleOnly ? 'active' : ''}" data-sale-only><span></span>Đang ưu đãi</button></div>
+        <div class="filter-group"><strong>KÍCH CỠ</strong><div class="size-filter">${['S','M','L','XL'].map(size => `<button class="${shopState.size === size ? 'active' : ''}" data-size-filter="${size}">${size}</button>`).join('')}<button class="${shopState.size === '' ? 'active' : ''}" data-size-filter="">ALL</button></div></div>
+        <button class="reset-filter" data-reset-filters>ĐẶT LẠI BỘ LỌC</button>
+      </aside>
+      <div class="catalog-main">
+        <div class="catalog-toolbar"><strong>${list.length} SẢN PHẨM</strong><label>SẮP XẾP THEO <select id="sortSelect" class="select-control" aria-label="Sắp xếp"><option value="featured">Mặc định</option><option value="price-asc" ${shopState.sort === 'price-asc' ? 'selected' : ''}>Giá tăng dần</option><option value="price-desc" ${shopState.sort === 'price-desc' ? 'selected' : ''}>Giá giảm dần</option><option value="name" ${shopState.sort === 'name' ? 'selected' : ''}>Tên A–Z</option></select></label></div>
+        <div class="product-grid" id="productGrid">${list.length ? list.map(productCard).join('') : '<div class="empty-state"><h3>KHÔNG TÌM THẤY SẢN PHẨM</h3><p>Hãy thử từ khóa hoặc bộ lọc khác.</p></div>'}</div>
       </div>
-      <div class="category-row">${categories.map(c => `<button class="chip ${shopState.category === c ? 'active' : ''}" data-category="${c}">${c}</button>`).join('')}</div>
-      <div class="product-grid" id="productGrid">${list.length ? list.map(productCard).join('') : '<div class="empty-state"><h3>Không tìm thấy sản phẩm</h3><p>Hãy thử từ khóa hoặc danh mục khác.</p></div>'}</div>
     </section>
 
-    <section class="benefit-strip">
+    <section class="benefit-strip" id="benefits">
       <div class="benefit"><strong>Giao hàng toàn quốc</strong><span>Theo dõi trạng thái đơn theo thời gian thực.</span></div>
       <div class="benefit"><strong>Thanh toán linh hoạt</strong><span>COD, thẻ ngân hàng hoặc ví điện tử.</span></div>
       <div class="benefit"><strong>Hỗ trợ tận tâm</strong><span>Tư vấn kích cỡ và đổi trả trong 14 ngày.</span></div>
     </section>
   </div>`;
+  requestAnimationFrame(updateSaleCountdown);
 }
+
+const saleEndsAt = Date.now() + (3 * 24 * 60 * 60 + 8 * 60 * 60 + 24 * 60 + 16) * 1000;
+function updateSaleCountdown() {
+  const remaining = Math.max(0, saleEndsAt - Date.now());
+  const values = {
+    days: Math.floor(remaining / 86400000),
+    hours: Math.floor(remaining / 3600000) % 24,
+    minutes: Math.floor(remaining / 60000) % 60,
+    seconds: Math.floor(remaining / 1000) % 60
+  };
+  Object.entries(values).forEach(([key, value]) => {
+    const el = document.querySelector(`[data-countdown="${key}"]`);
+    if (el) el.textContent = String(value).padStart(2, '0');
+  });
+}
+setInterval(updateSaleCountdown, 1000);
 
 function openProduct(id) {
   const product = getProduct(id);
@@ -191,7 +220,7 @@ function addToCart(productId, size) {
   const existing = cart.find(item => item.productId === product.id && item.size === chosenSize);
   if (existing) existing.qty = Math.min(existing.qty + 1, product.stock);
   else cart.push({ productId: product.id, qty: 1, size: chosenSize });
-  saveStore('nw_cart', cart);
+  saveStore('uef_cart', cart);
   updateHeader();
   toast(`${product.name} đã được thêm vào giỏ.`);
 }
@@ -214,7 +243,7 @@ function renderCart() {
 function openAuth(action = null) { pendingAction = action; openModal(authModal); }
 function loginAs(role) {
   session = role === 'admin' ? { role: 'admin', name: 'Admin', email: 'admin@demo.vn' } : { role: 'customer', name: profile.name, email: profile.email };
-  saveStore('nw_session', session);
+  saveStore('uef_session', session);
   closeAll();
   updateHeader();
   toast(`Xin chào ${session.name}!`, 'Đăng nhập thành công');
@@ -224,7 +253,7 @@ function loginAs(role) {
 }
 function logout() {
   session = null;
-  localStorage.removeItem('nw_session');
+  localStorage.removeItem('uef_session');
   accountTab = 'orders';
   location.hash = '#/shop';
   render();
@@ -262,12 +291,12 @@ function renderCheckout() {
 function placeOrder() {
   const subtotal = cartSubtotal();
   const shipping = subtotal >= 799000 ? 0 : 30000;
-  const newOrder = { id: `NW-${Date.now().toString().slice(-6)}`, date: new Date().toLocaleDateString('vi-VN'), customer: checkoutData.name, email: session.email, total: subtotal + shipping, status: 'pending', payment: checkoutData.payment, items: cart.map(item => ({ ...item })) };
+  const newOrder = { id: `UEF-${Date.now().toString().slice(-6)}`, date: new Date().toLocaleDateString('vi-VN'), customer: checkoutData.name, email: session.email, total: subtotal + shipping, status: 'pending', payment: checkoutData.payment, items: cart.map(item => ({ ...item })) };
   orders.unshift(newOrder);
-  saveStore('nw_orders', orders);
+  saveStore('uef_orders', orders);
   lastPlacedOrder = newOrder;
   cart = [];
-  saveStore('nw_cart', cart);
+  saveStore('uef_cart', cart);
   updateHeader();
   checkoutStep = 4;
   renderCheckout();
@@ -275,7 +304,7 @@ function placeOrder() {
 
 function renderAccount() {
   if (!session || session.role !== 'customer') {
-    app.innerHTML = `<div class="page-shell"><div class="admin-login"><span class="eyebrow">NOVA MEMBER</span><h1>Tài khoản của bạn</h1><p>Đăng nhập để theo dõi đơn hàng, quản lý địa chỉ và cập nhật thông tin cá nhân.</p><button class="button primary full" data-open-login>Đăng nhập tài khoản demo</button></div></div>`;
+    app.innerHTML = `<div class="page-shell"><div class="admin-login"><span class="eyebrow">UEF MEMBER</span><h1>Tài khoản của bạn</h1><p>Đăng nhập để theo dõi đơn hàng, quản lý địa chỉ và cập nhật thông tin cá nhân.</p><button class="button primary full" data-open-login>Đăng nhập tài khoản demo</button></div></div>`;
     return;
   }
   const customerOrders = orders.filter(order => order.email === session.email);
@@ -338,7 +367,7 @@ function renderReports() {
 }
 
 function saveAll() {
-  saveStore('nw_products', products); saveStore('nw_orders', orders); saveStore('nw_users', users); saveStore('nw_favorites', favorites);
+  saveStore('uef_products', products); saveStore('uef_orders', orders); saveStore('uef_users', users); saveStore('uef_favorites', favorites);
 }
 
 document.addEventListener('click', event => {
@@ -358,15 +387,18 @@ document.addEventListener('click', event => {
   if (target.dataset.favorite) {
     const id = Number(target.dataset.favorite);
     favorites = favorites.includes(id) ? favorites.filter(x => x !== id) : [...favorites, id];
-    saveStore('nw_favorites', favorites); renderShop();
+    saveStore('uef_favorites', favorites); renderShop();
   }
   if (target.dataset.category) { shopState.category = target.dataset.category; renderShop(); document.querySelector('#catalog')?.scrollIntoView(); }
+  if (target.dataset.sizeFilter !== undefined) { shopState.size = shopState.size === target.dataset.sizeFilter ? '' : target.dataset.sizeFilter; renderShop(); document.querySelector('#catalog')?.scrollIntoView(); }
+  if (target.dataset.saleOnly !== undefined) { shopState.saleOnly = !shopState.saleOnly; renderShop(); document.querySelector('#catalog')?.scrollIntoView(); }
+  if (target.dataset.resetFilters !== undefined) { shopState = { search: '', category: 'Tất cả', size: '', saleOnly: false, sort: 'featured' }; renderShop(); document.querySelector('#catalog')?.scrollIntoView(); }
   if (target.dataset.qty !== undefined) {
     const index = Number(target.dataset.qty), delta = Number(target.dataset.delta);
     cart[index].qty = Math.max(1, Math.min(cart[index].qty + delta, getProduct(cart[index].productId).stock));
-    saveStore('nw_cart', cart); updateHeader(); renderCart();
+    saveStore('uef_cart', cart); updateHeader(); renderCart();
   }
-  if (target.dataset.remove !== undefined) { cart.splice(Number(target.dataset.remove), 1); saveStore('nw_cart', cart); updateHeader(); renderCart(); }
+  if (target.dataset.remove !== undefined) { cart.splice(Number(target.dataset.remove), 1); saveStore('uef_cart', cart); updateHeader(); renderCart(); }
   if (target.id === 'checkoutBtn') openCheckout();
   if (target.dataset.openLogin !== undefined) openAuth();
   if (target.dataset.demoLogin) loginAs(target.dataset.demoLogin === 'admin' ? 'admin' : 'customer');
@@ -405,9 +437,9 @@ document.addEventListener('submit', event => {
     checkoutData.name = document.querySelector('#shipName').value.trim(); checkoutData.phone = document.querySelector('#shipPhone').value.trim(); checkoutData.address = document.querySelector('#shipAddress').value.trim(); checkoutData.delivery = document.querySelector('#deliveryMethod').value; checkoutStep = 2; renderCheckout();
   }
   if (event.target.id === 'profileForm') {
-    profile.name = document.querySelector('#profileName').value.trim(); profile.phone = document.querySelector('#profilePhone').value.trim(); profile.email = document.querySelector('#profileEmail').value.trim(); session.name = profile.name; session.email = profile.email; saveStore('nw_profile', profile); saveStore('nw_session', session); render(); toast('Thông tin cá nhân đã được cập nhật.');
+    profile.name = document.querySelector('#profileName').value.trim(); profile.phone = document.querySelector('#profilePhone').value.trim(); profile.email = document.querySelector('#profileEmail').value.trim(); session.name = profile.name; session.email = profile.email; saveStore('uef_profile', profile); saveStore('uef_session', session); render(); toast('Thông tin cá nhân đã được cập nhật.');
   }
-  if (event.target.id === 'addressForm') { profile.address = document.querySelector('#profileAddress').value.trim(); saveStore('nw_profile', profile); checkoutData.address = profile.address; renderAccount(); toast('Địa chỉ mặc định đã được cập nhật.'); }
+  if (event.target.id === 'addressForm') { profile.address = document.querySelector('#profileAddress').value.trim(); saveStore('uef_profile', profile); checkoutData.address = profile.address; renderAccount(); toast('Địa chỉ mặc định đã được cập nhật.'); }
   if (event.target.id === 'addProductForm') {
     const nextId = Math.max(...products.map(p => p.id)) + 1;
     products.push({ id: nextId, name: document.querySelector('#newProductName').value.trim(), category: document.querySelector('#newProductCategory').value, price: Number(document.querySelector('#newProductPrice').value), oldPrice: null, stock: Number(document.querySelector('#newProductStock').value), badge: 'Mới', sprite: [0, 0], color: 'Kem', sizes: ['S','M','L'], visible: true, description: 'Sản phẩm mới được thêm từ trang quản trị.' });
@@ -441,7 +473,7 @@ function registerWebMcpTools() {
   try {
     void Promise.resolve(context.registerTool({
       name: 'search_store_products',
-      title: 'Tìm sản phẩm NOVA WEAR',
+      title: 'Tìm sản phẩm UEF SHOP',
       description: 'Tìm các sản phẩm đang bán theo tên hoặc danh mục và trả về giá cùng tồn kho hiện tại.',
       inputSchema: {
         type: 'object',
@@ -462,7 +494,7 @@ function registerWebMcpTools() {
     void Promise.resolve(context.registerTool({
       name: 'add_store_item_to_cart',
       title: 'Thêm sản phẩm vào giỏ',
-      description: 'Thêm một sản phẩm NOVA WEAR hợp lệ vào giỏ hàng demo và cập nhật giao diện.',
+      description: 'Thêm một sản phẩm UEF SHOP hợp lệ vào giỏ hàng demo và cập nhật giao diện.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -484,7 +516,7 @@ function registerWebMcpTools() {
         const existing = cart.find(item => item.productId === product.id && item.size === size);
         if (existing) existing.qty = Math.min(existing.qty + quantity, product.stock);
         else cart.push({ productId: product.id, qty: Math.min(quantity, product.stock), size });
-        saveStore('nw_cart', cart);
+        saveStore('uef_cart', cart);
         updateHeader();
         toast(`${product.name} đã được thêm vào giỏ.`);
         return { productId: product.id, name: product.name, size, cartQuantity: cartCount(), subtotal: cartSubtotal() };
