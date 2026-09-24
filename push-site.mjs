@@ -1,7 +1,10 @@
 import { spawn } from 'node:child_process';
+import { createInterface } from 'node:readline';
 
-let input = '';
-for await (const chunk of process.stdin) input += chunk;
+const input = await new Promise(resolve => {
+  const lines = createInterface({ input: process.stdin, terminal: false });
+  lines.once('line', line => { lines.close(); resolve(line); });
+});
 const credential = JSON.parse(input);
 const authValue = credential.authMode === 'http_extra_header'
   ? `Bearer ${credential.token}`
