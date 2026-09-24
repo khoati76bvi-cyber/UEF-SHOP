@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#11130f" />
+    <meta name="description" content="NOVA WEAR - Bản demo cửa hàng thời trang trực tuyến với đầy đủ luồng mua hàng và quản trị." />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2311130f'/%3E%3Cpath d='M17 47V17h7l16 20V17h7v30h-7L24 27v20z' fill='%23c8ff3d'/%3E%3C/svg%3E" />
+    <title>NOVA WEAR — Online Clothing Store</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="announcement">Miễn phí vận chuyển cho đơn từ 799.000đ · Đổi trả trong 14 ngày</div>
+    <header class="site-header">
+      <a class="brand" href="#/shop" aria-label="NOVA WEAR - Trang chủ">
+        <span class="brand-mark">N</span>
+        <span>NOVA WEAR</span>
+      </a>
+      <nav class="main-nav" aria-label="Điều hướng chính">
+        <a href="#/shop" data-route-link="shop">Cửa hàng</a>
+        <a href="#/account" data-route-link="account">Tài khoản</a>
+        <a href="#/admin" data-route-link="admin">Quản trị</a>
+      </nav>
+      <div class="header-actions">
+        <button class="icon-button" id="searchFocusBtn" aria-label="Tìm kiếm sản phẩm" title="Tìm kiếm">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
+        </button>
+        <button class="user-pill" id="sessionBtn" type="button">Đăng nhập</button>
+        <button class="cart-button" id="cartBtn" type="button" aria-label="Mở giỏ hàng">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L21 7H7"></path><circle cx="10" cy="20" r="1"></circle><circle cx="18" cy="20" r="1"></circle></svg>
+          <span id="cartCount">0</span>
+        </button>
+      </div>
+    </header>
+
+    <main id="app" tabindex="-1"></main>
+
+    <footer class="site-footer">
+      <div>
+        <a class="brand footer-brand" href="#/shop"><span class="brand-mark">N</span><span>NOVA WEAR</span></a>
+        <p>Thời trang hiện đại, thiết kế tối giản và dễ ứng dụng mỗi ngày.</p>
+      </div>
+      <div class="footer-links">
+        <div><strong>Hỗ trợ</strong><a href="#/shop">Hướng dẫn mua hàng</a><a href="#/account">Tra cứu đơn hàng</a></div>
+        <div><strong>Chính sách</strong><a href="#/shop">Đổi trả 14 ngày</a><a href="#/shop">Bảo mật thông tin</a></div>
+      </div>
+      <div class="footer-bottom"><span>© 2026 NOVA WEAR</span><span>Demo môn Công nghệ phần mềm</span></div>
+    </footer>
+
+    <div class="overlay" id="overlay" hidden></div>
+    <aside class="drawer" id="cartDrawer" aria-label="Giỏ hàng" aria-hidden="true">
+      <div class="drawer-header"><div><span class="eyebrow">ĐƠN HÀNG CỦA BẠN</span><h2>Giỏ hàng</h2></div><button class="close-button" data-close aria-label="Đóng">×</button></div>
+      <div class="drawer-body" id="cartItems"></div>
+      <div class="drawer-footer" id="cartSummary"></div>
+    </aside>
+
+    <section class="modal" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authTitle" hidden>
+      <button class="close-button modal-close" data-close aria-label="Đóng">×</button>
+      <div class="modal-kicker">NOVA MEMBER</div>
+      <h2 id="authTitle">Đăng nhập</h2>
+      <p class="modal-copy">Đăng nhập để thanh toán, xem lịch sử và theo dõi đơn hàng.</p>
+      <form id="loginForm" class="stack-form">
+        <label>Email<input type="email" id="loginEmail" value="user@demo.vn" required /></label>
+        <label>Mật khẩu<input type="password" id="loginPassword" value="demo123" required /></label>
+        <p class="form-error" id="loginError" role="alert"></p>
+        <button class="button primary full" type="submit">Đăng nhập</button>
+      </form>
+      <div class="demo-accounts">
+        <span>Tài khoản demo</span>
+        <button type="button" data-demo-login="customer">Khách hàng</button>
+        <button type="button" data-demo-login="admin">Quản trị viên</button>
+      </div>
+    </section>
+
+    <section class="modal product-modal" id="productModal" role="dialog" aria-modal="true" aria-labelledby="productModalTitle" hidden></section>
+    <section class="modal checkout-modal" id="checkoutModal" role="dialog" aria-modal="true" aria-labelledby="checkoutTitle" hidden></section>
+    <div class="toast-region" id="toastRegion" aria-live="polite"></div>
+
+    <script src="./app.js" defer></script>
+  </body>
+</html>
