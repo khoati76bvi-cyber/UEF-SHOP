@@ -1,5 +1,46 @@
 const VND = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' });
 
+const defaultSiteSettings = {
+  shopName: 'UEF SHOP',
+  logoLetter: 'U',
+  shopTagline: 'ONLINE STORE / EST. 2026',
+  announcement: 'THIẾT KẾ HIỆU NĂNG CHO NHỊP SỐNG SINH VIÊN.',
+  announcementLink: 'KHÁM PHÁ NGAY →',
+  navHome: 'TRANG CHỦ',
+  navProducts: 'SẢN PHẨM',
+  navSupport: 'HỖ TRỢ',
+  heroLabel: 'FLASH SALE',
+  heroBadge: 'HOT DEAL',
+  heroTitleLine1: 'DEAL ĐỈNH CHO',
+  heroTitleLine2: 'NHỊP SỐNG UEF',
+  heroDescription: 'Thiết kế năng động cho lịch học, hoạt động câu lạc bộ và những buổi xuống phố.',
+  heroButton: 'XEM TẤT CẢ DEAL',
+  heroImage: './assets/catalog-products.png',
+  catalogEyebrow: 'TRANG CHỦ / BỘ SƯU TẬP 2026',
+  catalogTitle: 'TẤT CẢ SẢN PHẨM',
+  catalogImage: './assets/catalog-products.png',
+  marquee: 'UEF SHOP · SĂN DEAL · PHỐI CHẤT · CÒN HÀNG · CAMPUS DROP ·',
+  benefits: [
+    { title: 'Giao hàng toàn quốc', text: 'Theo dõi trạng thái đơn theo thời gian thực.' },
+    { title: 'Thanh toán linh hoạt', text: 'COD, thẻ ngân hàng hoặc ví điện tử.' },
+    { title: 'Hỗ trợ tận tâm', text: 'Tư vấn kích cỡ và đổi trả trong 14 ngày.' }
+  ],
+  footerDescription: 'Thời trang năng động cho học tập, hoạt động ngoại khóa và nhịp sống thành thị của sinh viên UEF.',
+  footerSupportTitle: 'Hỗ trợ',
+  footerSupportLink1: 'Hướng dẫn mua hàng',
+  footerSupportLink2: 'Tra cứu đơn hàng',
+  footerPolicyTitle: 'Chính sách',
+  footerPolicyLink1: 'Đổi trả 14 ngày',
+  footerPolicyLink2: 'Bảo mật thông tin',
+  copyright: '© 2026 UEF SHOP',
+  footerNote: 'Demo môn Công nghệ phần mềm',
+  accentColor: '#d9ff00',
+  hotColor: '#ff007a',
+  inkColor: '#0a0a0a',
+  paperColor: '#f4f4ef',
+  customCss: ''
+};
+
 const defaultProducts = [
   { id: 1, name: 'Áo thun Oversized Essential', category: 'Áo', price: 329000, oldPrice: 399000, stock: 24, badge: 'Bán chạy', sprite: [0, 0], color: 'Kem', sizes: ['S', 'M', 'L', 'XL'], visible: true, description: 'Áo thun cotton 240gsm, phom rộng hiện đại và bề mặt vải mềm mịn.' },
   { id: 2, name: 'Áo khoác Denim Black', category: 'Áo khoác', price: 899000, oldPrice: 1099000, stock: 12, badge: 'Mới', sprite: [33.333, 0], color: 'Đen', sizes: ['M', 'L', 'XL'], visible: true, description: 'Denim dày vừa, xử lý wash đen và đường may chắc chắn cho phong cách đường phố.' },
@@ -30,6 +71,7 @@ function loadStore(key, fallback) {
 }
 function saveStore(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
 
+let siteSettings = { ...defaultSiteSettings };
 let products = loadStore('uef_products', defaultProducts);
 let cart = loadStore('uef_cart', []);
 let orders = loadStore('uef_orders', seedOrders);
@@ -42,6 +84,9 @@ let shopState = { search: '', category: 'Tất cả', size: '', saleOnly: false,
 let accountTab = 'orders';
 let adminTab = 'dashboard';
 let adminAddOpen = false;
+let editingProductId = null;
+let serverDataReady = false;
+let lastDataSave = 'Đang kết nối dữ liệu...';
 let pendingAction = null;
 let checkoutStep = 1;
 let checkoutData = { name: profile.name, phone: profile.phone, address: profile.address, delivery: 'Tiêu chuẩn', payment: 'COD' };
@@ -63,7 +108,82 @@ const icons = {
   arrow: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M14 7l5 5-5 5"></path></svg>'
 };
 
-function spriteStyle(product) { return `background-position:${product.sprite[0]}% ${product.sprite[1]}%`; }
+function safeCssUrl(value) { return String(value || '').replace(/["'()\\\r\n]/g, ''); }
+function escapeHtml(value) { return String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[character]); }
+function mediaStyle(product) {
+  if (product?.image) return `background-image:url("${safeCssUrl(product.image)}");background-position:center;background-size:cover`;
+  const sprite = Array.isArray(product?.sprite) ? product.sprite : [0, 0];
+  return `background-position:${sprite[0]}% ${sprite[1]}%`;
+}
+function bannerStyle(image, overlay) {
+  const path = safeCssUrl(image || './assets/catalog-products.png');
+  return `background-image:${overlay},url("${path}");background-position:center;background-size:cover`;
+}
+function applySiteSettings() {
+  document.documentElement.style.setProperty('--acid', siteSettings.accentColor || defaultSiteSettings.accentColor);
+  document.documentElement.style.setProperty('--hot', siteSettings.hotColor || defaultSiteSettings.hotColor);
+  document.documentElement.style.setProperty('--ink', siteSettings.inkColor || defaultSiteSettings.inkColor);
+  document.documentElement.style.setProperty('--paper', siteSettings.paperColor || defaultSiteSettings.paperColor);
+  document.querySelectorAll('[data-shop-name]').forEach(element => { element.textContent = siteSettings.shopName; });
+  document.querySelectorAll('[data-logo-letter]').forEach(element => { element.textContent = siteSettings.logoLetter; });
+  document.querySelectorAll('[data-shop-tagline]').forEach(element => { element.textContent = siteSettings.shopTagline; });
+  document.querySelector('#announcementText').textContent = siteSettings.announcement;
+  document.querySelector('#announcementLink').textContent = siteSettings.announcementLink;
+  document.querySelector('#navHome').textContent = siteSettings.navHome;
+  document.querySelector('#navProducts').textContent = siteSettings.navProducts;
+  document.querySelector('#navSupport').textContent = siteSettings.navSupport;
+  document.querySelector('#footerDescription').textContent = siteSettings.footerDescription;
+  document.querySelector('#footerSupportTitle').textContent = siteSettings.footerSupportTitle;
+  document.querySelector('#footerSupportLink1').textContent = siteSettings.footerSupportLink1;
+  document.querySelector('#footerSupportLink2').textContent = siteSettings.footerSupportLink2;
+  document.querySelector('#footerPolicyTitle').textContent = siteSettings.footerPolicyTitle;
+  document.querySelector('#footerPolicyLink1').textContent = siteSettings.footerPolicyLink1;
+  document.querySelector('#footerPolicyLink2').textContent = siteSettings.footerPolicyLink2;
+  document.querySelector('#copyrightText').textContent = siteSettings.copyright;
+  document.querySelector('#footerNote').textContent = siteSettings.footerNote;
+  let customStyle = document.querySelector('#customSiteCss');
+  if (!customStyle) { customStyle = document.createElement('style'); customStyle.id = 'customSiteCss'; document.head.appendChild(customStyle); }
+  customStyle.textContent = siteSettings.customCss || '';
+  document.title = `${siteSettings.shopName} — Online Clothing Store`;
+}
+function storePayload() { return { site: siteSettings, products, orders, users }; }
+function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('Không thể đọc tệp ảnh.'));
+    reader.readAsDataURL(file);
+  });
+}
+async function uploadImage(file) {
+  if (!file) return '';
+  const response = await fetch('/api/upload', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ filename: file.name, dataUrl: await fileToDataUrl(file) })
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.error || 'Không thể tải ảnh lên.');
+  return result.path;
+}
+async function loadAuthoritativeData() {
+  try {
+    const response = await fetch('/api/store-data', { cache: 'no-store' });
+    if (!response.ok) throw new Error('Máy chủ dữ liệu chưa sẵn sàng.');
+    const data = await response.json();
+    siteSettings = { ...defaultSiteSettings, ...(data.site || {}) };
+    products = Array.isArray(data.products) ? data.products : defaultProducts;
+    orders = Array.isArray(data.orders) ? data.orders : seedOrders;
+    users = Array.isArray(data.users) ? data.users : seedUsers;
+    serverDataReady = true;
+    lastDataSave = data.updatedAt ? `Đã nạp lúc ${new Date(data.updatedAt).toLocaleString('vi-VN')}` : 'Đã kết nối tệp dữ liệu';
+    applySiteSettings();
+    render();
+  } catch (error) {
+    lastDataSave = 'Đang dùng dữ liệu dự phòng trong trình duyệt';
+    console.warn(error);
+  }
+}
 function getProduct(id) { return products.find(p => p.id === Number(id)); }
 function cartCount() { return cart.reduce((sum, item) => sum + item.qty, 0); }
 function cartSubtotal() { return cart.reduce((sum, item) => sum + (getProduct(item.productId)?.price || 0) * item.qty, 0); }
@@ -101,7 +221,7 @@ function getRoute() { return location.hash.replace(/^#\//, '').split('/')[0] || 
 function render() {
   updateHeader();
   const route = getRoute();
-  if (route === 'admin') renderAdmin();
+  if (route === 'admin') { location.replace('./admin.html'); return; }
   else if (route === 'account') renderAccount();
   else renderShop();
   requestAnimationFrame(() => app.focus({ preventScroll: true }));
@@ -110,12 +230,12 @@ function render() {
 function productCard(product) {
   const favorite = favorites.includes(product.id);
   return `<article class="product-card">
-    <div class="product-image" style="${spriteStyle(product)}" data-product="${product.id}" role="button" tabindex="0" aria-label="Xem ${product.name}">
+    <div class="product-image" style="${mediaStyle(product)}" data-product="${product.id}" role="button" tabindex="0" aria-label="Xem ${product.name}">
       ${product.oldPrice ? `<span class="product-badge">GIẢM ${Math.round((1 - product.price / product.oldPrice) * 100)}%</span>` : product.badge ? `<span class="product-badge">${product.badge}</span>` : ''}
       <button class="favorite-button ${favorite ? 'active' : ''}" data-favorite="${product.id}" aria-label="${favorite ? 'Bỏ yêu thích' : 'Thêm yêu thích'}">${favorite ? '♥' : '♡'}</button>
     </div>
     <div class="product-info">
-      <div class="product-meta"><span>UEF SHOP</span><span>${product.stock > 0 ? 'CÒN HÀNG' : 'HẾT HÀNG'}</span></div>
+      <div class="product-meta"><span>${siteSettings.shopName}</span><span>${product.stock > 0 ? 'CÒN HÀNG' : 'HẾT HÀNG'}</span></div>
       <h3>${product.name}</h3>
       <div class="price-line"><strong>${VND.format(product.price)}</strong>${product.oldPrice ? `<del>${VND.format(product.oldPrice)}</del>` : ''}</div>
       <div class="card-actions"><button class="button primary" data-add="${product.id}">THÊM VÀO GIỎ</button><button class="square-button" data-product="${product.id}" aria-label="Xem chi tiết">${icons.arrow}</button></div>
@@ -138,21 +258,21 @@ function renderShop() {
   app.innerHTML = `<div class="uef-shop-page">
     <section class="flash-hero" aria-labelledby="flashTitle">
       <div class="flash-copy">
-        <div class="flash-label"><span>FLASH SALE</span><b>HOT DEAL</b></div>
-        <h1 id="flashTitle"><span>DEAL ĐỈNH CHO</span><br><span>NHỊP SỐNG UEF</span></h1>
-        <p>Thiết kế năng động cho lịch học, hoạt động câu lạc bộ và những buổi xuống phố.</p>
-        <div class="flash-actions"><a class="button primary" href="#catalog">XEM TẤT CẢ DEAL ${icons.arrow}</a><strong>■ SỐ LƯỢNG CÓ HẠN</strong></div>
+        <div class="flash-label"><span>${siteSettings.heroLabel}</span><b>${siteSettings.heroBadge}</b></div>
+        <h1 id="flashTitle"><span>${siteSettings.heroTitleLine1}</span><br><span>${siteSettings.heroTitleLine2}</span></h1>
+        <p>${siteSettings.heroDescription}</p>
+        <div class="flash-actions"><a class="button primary" href="#catalog">${siteSettings.heroButton} ${icons.arrow}</a><strong>■ SỐ LƯỢNG CÓ HẠN</strong></div>
       </div>
-      <div class="flash-visual" role="img" aria-label="Bộ sưu tập thời trang UEF SHOP">
+      <div class="flash-visual" style="${bannerStyle(siteSettings.heroImage, 'linear-gradient(90deg,#0a0a0a 0%,rgba(10,10,10,.55) 28%,rgba(10,10,10,.18))')}" role="img" aria-label="Bộ sưu tập thời trang ${siteSettings.shopName}">
         <div class="live-tag">● LIVE</div>
         <div class="countdown-card"><span>KẾT THÚC SAU</span><div class="countdown-grid"><b><em data-countdown="days">03</em><small>NGÀY</small></b><b><em data-countdown="hours">08</em><small>GIỜ</small></b><b><em data-countdown="minutes">24</em><small>PHÚT</small></b><b class="hot"><em data-countdown="seconds">16</em><small>GIÂY</small></b></div></div>
       </div>
     </section>
-    <div class="signal-marquee" aria-hidden="true">UEF SHOP · SĂN DEAL · PHỐI CHẤT · CÒN HÀNG · CAMPUS DROP · UEF SHOP · SĂN DEAL · PHỐI CHẤT ·</div>
+    <div class="signal-marquee" aria-hidden="true">${siteSettings.marquee} ${siteSettings.marquee}</div>
 
-    <section class="catalog-banner">
-      <span><b>TRANG CHỦ</b> / BỘ SƯU TẬP 2026</span>
-      <h2>TẤT CẢ SẢN PHẨM</h2>
+    <section class="catalog-banner" style="${bannerStyle(siteSettings.catalogImage, 'linear-gradient(90deg,rgba(0,0,0,.88),rgba(0,0,0,.42))')}">
+      <span><b>${siteSettings.catalogEyebrow.split('/')[0].trim()}</b>${siteSettings.catalogEyebrow.includes('/') ? ` / ${siteSettings.catalogEyebrow.split('/').slice(1).join('/').trim()}` : ''}</span>
+      <h2>${siteSettings.catalogTitle}</h2>
     </section>
 
     <section class="catalog-layout" id="catalog">
@@ -169,11 +289,7 @@ function renderShop() {
       </div>
     </section>
 
-    <section class="benefit-strip" id="benefits">
-      <div class="benefit"><strong>Giao hàng toàn quốc</strong><span>Theo dõi trạng thái đơn theo thời gian thực.</span></div>
-      <div class="benefit"><strong>Thanh toán linh hoạt</strong><span>COD, thẻ ngân hàng hoặc ví điện tử.</span></div>
-      <div class="benefit"><strong>Hỗ trợ tận tâm</strong><span>Tư vấn kích cỡ và đổi trả trong 14 ngày.</span></div>
-    </section>
+    <section class="benefit-strip" id="benefits">${(siteSettings.benefits || defaultSiteSettings.benefits).map(benefit => `<div class="benefit"><strong>${benefit.title}</strong><span>${benefit.text}</span></div>`).join('')}</section>
   </div>`;
   requestAnimationFrame(updateSaleCountdown);
 }
@@ -199,7 +315,7 @@ function openProduct(id) {
   if (!product) return;
   productModal.innerHTML = `<button class="close-button modal-close" data-close aria-label="Đóng">×</button>
     <div class="product-detail-grid">
-      <div class="detail-image" style="${spriteStyle(product)}" role="img" aria-label="${product.name}"></div>
+      <div class="detail-image" style="${mediaStyle(product)}" role="img" aria-label="${product.name}"></div>
       <div class="detail-copy">
         <span class="eyebrow">${product.category} · Còn ${product.stock} sản phẩm</span>
         <h2 id="productModalTitle">${product.name}</h2>
@@ -233,7 +349,7 @@ function renderCart() {
   }
   cartItemsEl.innerHTML = cart.map((item, index) => {
     const product = getProduct(item.productId);
-    return `<div class="cart-item"><div class="cart-thumb" style="${spriteStyle(product)}"></div><div><h4>${product.name}</h4><p>Size ${item.size} · ${VND.format(product.price)}</p><div class="quantity"><button data-qty="${index}" data-delta="-1" aria-label="Giảm số lượng">−</button><strong>${item.qty}</strong><button data-qty="${index}" data-delta="1" aria-label="Tăng số lượng">+</button></div></div><button class="remove-item" data-remove="${index}" aria-label="Xóa sản phẩm">×</button></div>`;
+    return `<div class="cart-item"><div class="cart-thumb" style="${mediaStyle(product)}"></div><div><h4>${product.name}</h4><p>Size ${item.size} · ${VND.format(product.price)}</p><div class="quantity"><button data-qty="${index}" data-delta="-1" aria-label="Giảm số lượng">−</button><strong>${item.qty}</strong><button data-qty="${index}" data-delta="1" aria-label="Tăng số lượng">+</button></div></div><button class="remove-item" data-remove="${index}" aria-label="Xóa sản phẩm">×</button></div>`;
   }).join('');
   const subtotal = cartSubtotal();
   const shipping = subtotal >= 799000 ? 0 : 30000;
@@ -248,7 +364,7 @@ function loginAs(role) {
   updateHeader();
   toast(`Xin chào ${session.name}!`, 'Đăng nhập thành công');
   if (pendingAction === 'checkout') { pendingAction = null; openCheckout(); }
-  else if (role === 'admin') { location.hash = '#/admin'; render(); }
+  else if (role === 'admin') { location.href = './admin.html'; }
   else if (getRoute() === 'account') render();
 }
 function logout() {
@@ -293,7 +409,7 @@ function placeOrder() {
   const shipping = subtotal >= 799000 ? 0 : 30000;
   const newOrder = { id: `UEF-${Date.now().toString().slice(-6)}`, date: new Date().toLocaleDateString('vi-VN'), customer: checkoutData.name, email: session.email, total: subtotal + shipping, status: 'pending', payment: checkoutData.payment, items: cart.map(item => ({ ...item })) };
   orders.unshift(newOrder);
-  saveStore('uef_orders', orders);
+  void saveAll();
   lastPlacedOrder = newOrder;
   cart = [];
   saveStore('uef_cart', cart);
@@ -322,7 +438,7 @@ function orderCard(order) {
 }
 
 function adminSidebar() {
-  const tabs = [['dashboard', 'Tổng quan'], ['products', 'Sản phẩm'], ['orders', 'Đơn hàng'], ['users', 'Người dùng'], ['reports', 'Báo cáo']];
+  const tabs = [['dashboard', 'Tổng quan'], ['studio', 'Thiết kế & banner'], ['products', 'Sản phẩm'], ['orders', 'Đơn hàng'], ['users', 'Người dùng'], ['reports', 'Báo cáo'], ['data', 'Trung tâm dữ liệu']];
   return `<aside class="admin-sidebar">${tabs.map(([id, label]) => `<button class="${adminTab === id ? 'active' : ''}" data-admin-tab="${id}">${label}</button>`).join('')}</aside>`;
 }
 
@@ -333,11 +449,57 @@ function renderAdmin() {
   }
   let content = '';
   if (adminTab === 'dashboard') content = renderDashboard();
+  if (adminTab === 'studio') content = renderAdminStudio();
   if (adminTab === 'products') content = renderAdminProducts();
   if (adminTab === 'orders') content = renderAdminOrders();
   if (adminTab === 'users') content = renderAdminUsers();
   if (adminTab === 'reports') content = renderReports();
-  app.innerHTML = `<div class="admin-shell"><div class="admin-top"><div><span class="eyebrow">ADMINISTRATOR</span><h1>Điều hành cửa hàng</h1></div><button class="button secondary" data-logout>Đăng xuất</button></div><div class="admin-layout">${adminSidebar()}<section class="admin-main">${content}</section></div></div>`;
+  if (adminTab === 'data') content = renderDataCenter();
+  app.innerHTML = `<div class="admin-shell"><div class="admin-top"><div><span class="eyebrow">UEF SHOP STUDIO</span><h1>Điều hành cửa hàng</h1><p class="admin-status"><span class="connection-dot ${serverDataReady ? 'online' : ''}"></span>${lastDataSave}</p></div><div class="admin-top-actions"><a class="button secondary" href="#/shop">Xem cửa hàng</a><button class="button secondary" data-logout>Đăng xuất</button></div></div><div class="admin-layout">${adminSidebar()}<section class="admin-main">${content}</section></div></div>`;
+}
+
+function renderAdminStudio() {
+  return `<form id="studioForm" class="studio-grid">
+    <section class="admin-panel studio-panel">
+      <div class="panel-head"><div><h2>Nhận diện cửa hàng</h2><small>Đổi tên, thông báo và màu chủ đạo toàn website</small></div></div>
+      <div class="form-grid">
+        <label>Tên cửa hàng<input id="siteShopName" value="${escapeHtml(siteSettings.shopName)}" required></label>
+        <label>Nút trên thanh thông báo<input id="siteAnnouncementLink" value="${escapeHtml(siteSettings.announcementLink)}" required></label>
+      </div>
+      <label>Nội dung thông báo<input id="siteAnnouncement" value="${escapeHtml(siteSettings.announcement)}" required></label>
+      <div class="form-grid color-grid">
+        <label>Màu nhấn<input id="siteAccentColor" type="color" value="${escapeHtml(siteSettings.accentColor)}"></label>
+        <label>Màu khuyến mãi<input id="siteHotColor" type="color" value="${escapeHtml(siteSettings.hotColor)}"></label>
+      </div>
+    </section>
+    <section class="admin-panel studio-panel">
+      <div class="panel-head"><div><h2>Hero banner</h2><small>Phần nổi bật đầu trang cửa hàng</small></div></div>
+      <div class="banner-preview" style="${bannerStyle(siteSettings.heroImage, 'linear-gradient(90deg,rgba(0,0,0,.82),rgba(0,0,0,.2))')}"><strong>${escapeHtml(siteSettings.heroTitleLine1)}<br>${escapeHtml(siteSettings.heroTitleLine2)}</strong></div>
+      <div class="form-grid">
+        <label>Nhãn nhỏ<input id="siteHeroLabel" value="${escapeHtml(siteSettings.heroLabel)}" required></label>
+        <label>Huy hiệu<input id="siteHeroBadge" value="${escapeHtml(siteSettings.heroBadge)}" required></label>
+        <label>Dòng tiêu đề 1<input id="siteHeroTitleLine1" value="${escapeHtml(siteSettings.heroTitleLine1)}" required></label>
+        <label>Dòng tiêu đề 2<input id="siteHeroTitleLine2" value="${escapeHtml(siteSettings.heroTitleLine2)}" required></label>
+      </div>
+      <label>Mô tả<textarea id="siteHeroDescription" required>${escapeHtml(siteSettings.heroDescription)}</textarea></label>
+      <div class="form-grid">
+        <label>Nội dung nút<input id="siteHeroButton" value="${escapeHtml(siteSettings.heroButton)}" required></label>
+        <label>Đường dẫn ảnh hiện tại<input id="siteHeroImage" value="${escapeHtml(siteSettings.heroImage)}" required></label>
+      </div>
+      <label class="file-drop">Thay ảnh hero banner<input id="siteHeroFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif"><small>PNG, JPG, WEBP hoặc GIF · tối đa 5 MB</small></label>
+    </section>
+    <section class="admin-panel studio-panel">
+      <div class="panel-head"><div><h2>Banner danh mục</h2><small>Ảnh và tiêu đề phía trên danh sách sản phẩm</small></div></div>
+      <div class="banner-preview compact" style="${bannerStyle(siteSettings.catalogImage, 'linear-gradient(90deg,rgba(0,0,0,.82),rgba(0,0,0,.28))')}"><strong>${escapeHtml(siteSettings.catalogTitle)}</strong></div>
+      <div class="form-grid">
+        <label>Dòng dẫn<input id="siteCatalogEyebrow" value="${escapeHtml(siteSettings.catalogEyebrow)}" required></label>
+        <label>Tiêu đề<input id="siteCatalogTitle" value="${escapeHtml(siteSettings.catalogTitle)}" required></label>
+      </div>
+      <label>Đường dẫn ảnh hiện tại<input id="siteCatalogImage" value="${escapeHtml(siteSettings.catalogImage)}" required></label>
+      <label class="file-drop">Thay ảnh banner danh mục<input id="siteCatalogFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif"><small>PNG, JPG, WEBP hoặc GIF · tối đa 5 MB</small></label>
+    </section>
+    <div class="studio-savebar"><div><strong>Lưu vào thư mục dự án</strong><small>Mọi thay đổi được ghi vào data/store-data.json</small></div><button class="button primary" type="submit">Lưu & cập nhật website</button></div>
+  </form>`;
 }
 
 function renderDashboard() {
@@ -347,7 +509,26 @@ function renderDashboard() {
 }
 
 function renderAdminProducts() {
-  return `<div class="admin-panel"><div class="panel-head"><div><h2>Quản lý sản phẩm</h2><small>${products.length} sản phẩm trong danh mục</small></div><button class="button dark small" data-toggle-product-form>${adminAddOpen ? 'Đóng biểu mẫu' : '+ Thêm sản phẩm'}</button></div>${adminAddOpen ? `<form id="addProductForm" class="stack-form"><div class="form-grid"><label>Tên sản phẩm<input id="newProductName" required></label><label>Danh mục<select id="newProductCategory"><option>Áo</option><option>Quần</option><option>Đầm</option><option>Áo khoác</option><option>Giày</option><option>Phụ kiện</option></select></label><label>Giá bán<input id="newProductPrice" type="number" min="1000" required></label><label>Tồn kho<input id="newProductStock" type="number" min="0" required></label></div><button class="button primary" type="submit">Lưu sản phẩm</button></form><br>` : ''}<div class="table-wrap"><table class="data-table"><thead><tr><th>Sản phẩm</th><th>Danh mục</th><th>Giá</th><th>Tồn kho</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>${products.map(p => `<tr><td><div class="table-product"><span class="mini-thumb" style="${spriteStyle(p)}"></span>${p.name}</div></td><td>${p.category}</td><td>${VND.format(p.price)}</td><td>${p.stock}</td><td><span class="status ${p.visible === false ? 'locked' : 'completed'}">${p.visible === false ? 'Đã ẩn' : 'Đang bán'}</span></td><td><div class="table-actions"><button data-stock="${p.id}" data-delta="5">+5 kho</button><button data-toggle-product="${p.id}">${p.visible === false ? 'Hiện' : 'Ẩn'}</button></div></td></tr>`).join('')}</tbody></table></div></div>`;
+  const editing = products.find(product => product.id === editingProductId);
+  const product = editing || { name: '', category: 'Áo', price: '', oldPrice: '', stock: 0, badge: 'Mới', color: '', sizes: ['S', 'M', 'L'], description: '', image: '' };
+  const categories = ['Áo', 'Quần', 'Đầm', 'Áo khoác', 'Giày', 'Phụ kiện'];
+  return `<div class="admin-panel"><div class="panel-head"><div><h2>Quản lý sản phẩm</h2><small>${products.length} sản phẩm · thêm, sửa ảnh, giá, size và tồn kho</small></div><button class="button dark small" data-toggle-product-form>${adminAddOpen ? 'Đóng biểu mẫu' : '+ Thêm sản phẩm'}</button></div>${adminAddOpen ? `<form id="productEditorForm" class="product-editor">
+    <div class="editor-preview"><span class="product-image-preview" style="${mediaStyle(product)}"></span><div><strong>${editing ? 'Đang sửa sản phẩm' : 'Sản phẩm mới'}</strong><small>${editing ? `Mã #${editing.id}` : 'Thông tin sẽ được lưu vào tệp dữ liệu chung'}</small></div></div>
+    <div class="form-grid">
+      <label>Tên sản phẩm<input id="productName" value="${escapeHtml(product.name)}" required></label>
+      <label>Danh mục<select id="productCategory">${categories.map(category => `<option ${product.category === category ? 'selected' : ''}>${category}</option>`).join('')}</select></label>
+      <label>Giá bán<input id="productPrice" type="number" min="1000" value="${product.price}" required></label>
+      <label>Giá gốc<input id="productOldPrice" type="number" min="0" value="${product.oldPrice || ''}" placeholder="Bỏ trống nếu không giảm giá"></label>
+      <label>Tồn kho<input id="productStock" type="number" min="0" value="${product.stock}" required></label>
+      <label>Huy hiệu<input id="productBadge" value="${escapeHtml(product.badge)}" placeholder="Mới, Hot, Giới hạn..."></label>
+      <label>Màu sắc<input id="productColor" value="${escapeHtml(product.color)}" required></label>
+      <label>Kích cỡ<input id="productSizes" value="${escapeHtml(product.sizes.join(', '))}" required placeholder="S, M, L, XL"></label>
+    </div>
+    <label>Mô tả sản phẩm<textarea id="productDescription" required>${escapeHtml(product.description)}</textarea></label>
+    <label>Đường dẫn ảnh hiện tại<input id="productImagePath" value="${escapeHtml(product.image || '')}" placeholder="Để trống để dùng ảnh mẫu"></label>
+    <label class="file-drop">Tải ảnh sản phẩm mới<input id="productImageFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif"><small>Ảnh vuông hoặc dọc · tối đa 5 MB</small></label>
+    <div class="editor-actions"><button class="button primary" type="submit">${editing ? 'Lưu thay đổi' : 'Thêm sản phẩm'}</button><button class="button secondary" type="button" data-toggle-product-form>Hủy</button></div>
+  </form><br>` : ''}<div class="table-wrap"><table class="data-table"><thead><tr><th>Sản phẩm</th><th>Danh mục</th><th>Giá</th><th>Tồn kho</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>${products.map(p => `<tr><td><div class="table-product"><span class="mini-thumb" style="${mediaStyle(p)}"></span>${escapeHtml(p.name)}</div></td><td>${escapeHtml(p.category)}</td><td>${VND.format(p.price)}</td><td>${p.stock}</td><td><span class="status ${p.visible === false ? 'locked' : 'completed'}">${p.visible === false ? 'Đã ẩn' : 'Đang bán'}</span></td><td><div class="table-actions"><button data-edit-product="${p.id}">Sửa</button><button data-stock="${p.id}" data-delta="5">+5 kho</button><button data-toggle-product="${p.id}">${p.visible === false ? 'Hiện' : 'Ẩn'}</button></div></td></tr>`).join('')}</tbody></table></div></div>`;
 }
 
 function renderAdminOrders() {
@@ -366,11 +547,37 @@ function renderReports() {
   return `<div class="report-grid"><div class="report-card"><p>Tổng doanh thu</p><strong>${VND.format(revenue)}</strong><div class="progress"><span style="width:82%"></span></div></div><div class="report-card"><p>Giá trị đơn trung bình</p><strong>${VND.format(avg)}</strong><div class="progress"><span style="width:64%"></span></div></div><div class="report-card"><p>Sản phẩm đã bán</p><strong>${sold}</strong><div class="progress"><span style="width:71%"></span></div></div></div><br><div class="admin-panel"><div class="panel-head"><div><h2>Hiệu quả danh mục</h2><small>Báo cáo mô phỏng cho tháng 09/2026</small></div><button class="button secondary small" data-export-report>Xuất CSV</button></div><div class="bar-chart">${[['Áo',88],['Quần',63],['Đầm',72],['Giày',56],['Phụ kiện',77]].map(([name, value]) => `<div class="bar-column"><div class="bar" style="height:${value}%"></div><span>${name}</span></div>`).join('')}</div></div>`;
 }
 
-function saveAll() {
-  saveStore('uef_products', products); saveStore('uef_orders', orders); saveStore('uef_users', users); saveStore('uef_favorites', favorites);
+function renderDataCenter() {
+  const jsonPreview = escapeHtml(JSON.stringify(storePayload(), null, 2));
+  return `<div class="data-center">
+    <div class="metrics-grid data-metrics"><div class="metric-card"><span>SẢN PHẨM</span><strong>${products.length}</strong><small>${products.filter(product => product.visible !== false).length} đang hiển thị</small></div><div class="metric-card"><span>ĐƠN HÀNG</span><strong>${orders.length}</strong><small>${orders.filter(order => ['pending','processing'].includes(order.status)).length} cần xử lý</small></div><div class="metric-card"><span>NGƯỜI DÙNG</span><strong>${users.length}</strong><small>${users.filter(user => user.status === 'active').length} hoạt động</small></div><div class="metric-card"><span>KẾT NỐI</span><strong>${serverDataReady ? 'ONLINE' : 'LOCAL'}</strong><small>${escapeHtml(lastDataSave)}</small></div></div>
+    <section class="admin-panel"><div class="panel-head"><div><h2>Trung tâm dữ liệu</h2><small>Mọi nội dung quan trọng được quản lý tập trung trong thư mục dự án</small></div></div>
+      <div class="path-card"><span>TỆP DỮ LIỆU CHÍNH</span><code>D:\\Clothing online shopping\\data\\store-data.json</code></div>
+      <div class="path-card"><span>THƯ MỤC ẢNH TẢI LÊN</span><code>D:\\Clothing online shopping\\dist\\uploads</code></div>
+      <div class="data-actions"><button class="button dark" data-export-store>Xuất bản sao JSON</button><label class="button secondary file-button">Nhập dữ liệu JSON<input id="dataImportFile" type="file" accept="application/json,.json"></label><button class="button secondary" data-reload-store>Tải lại từ tệp</button></div>
+      <p class="data-note">Khi chỉnh sửa trong Studio, Sản phẩm, Đơn hàng hoặc Người dùng, hệ thống tự lưu vào tệp JSON ở trên. Bạn có thể sao lưu hoặc chuyển toàn bộ dữ liệu bằng một tệp duy nhất.</p>
+      <details class="json-inspector"><summary>Xem dữ liệu hiện tại</summary><pre>${jsonPreview}</pre></details>
+    </section>
+  </div>`;
 }
 
-document.addEventListener('click', event => {
+async function saveAll() {
+  saveStore('uef_products', products);
+  saveStore('uef_orders', orders);
+  saveStore('uef_users', users);
+  saveStore('uef_favorites', favorites);
+  if (!serverDataReady) return;
+  const response = await fetch('/api/store-data', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(storePayload())
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.error || 'Không thể lưu dữ liệu.');
+  lastDataSave = `Đã lưu lúc ${new Date(result.updatedAt).toLocaleString('vi-VN')}`;
+}
+
+document.addEventListener('click', async event => {
   const target = event.target.closest('button, [data-product], [data-category], [data-route-link]');
   if (!target) return;
   if (target.matches('[data-close]')) closeAll();
@@ -410,18 +617,29 @@ document.addEventListener('click', event => {
   if (target.dataset.editAddress !== undefined) document.querySelector('#addressForm').hidden = false;
   if (target.dataset.logout !== undefined) logout();
   if (target.dataset.adminTab) { adminTab = target.dataset.adminTab; renderAdmin(); }
-  if (target.dataset.toggleProductForm !== undefined) { adminAddOpen = !adminAddOpen; renderAdmin(); }
-  if (target.dataset.stock) { const p = getProduct(target.dataset.stock); p.stock += Number(target.dataset.delta); saveAll(); renderAdmin(); toast(`Đã cập nhật tồn kho ${p.name}.`); }
-  if (target.dataset.toggleProduct) { const p = getProduct(target.dataset.toggleProduct); p.visible = p.visible === false; saveAll(); renderAdmin(); }
+  if (target.dataset.toggleProductForm !== undefined) { adminAddOpen = !adminAddOpen; editingProductId = null; renderAdmin(); }
+  if (target.dataset.editProduct) { editingProductId = Number(target.dataset.editProduct); adminAddOpen = true; renderAdmin(); document.querySelector('#productEditorForm')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  if (target.dataset.stock) { const p = getProduct(target.dataset.stock); p.stock += Number(target.dataset.delta); await saveAll(); renderAdmin(); toast(`Đã cập nhật tồn kho ${p.name}.`); }
+  if (target.dataset.toggleProduct) { const p = getProduct(target.dataset.toggleProduct); p.visible = p.visible === false; await saveAll(); renderAdmin(); }
   if (target.dataset.nextStatus) {
-    const flow = ['pending','processing','shipped','completed']; const o = orders.find(x => x.id === target.dataset.nextStatus); const i = flow.indexOf(o.status); o.status = flow[Math.min(i + 1, flow.length - 1)]; saveAll(); renderAdmin(); toast(`Đơn ${o.id}: ${statusLabel(o.status)}.`);
+    const flow = ['pending','processing','shipped','completed']; const o = orders.find(x => x.id === target.dataset.nextStatus); const i = flow.indexOf(o.status); o.status = flow[Math.min(i + 1, flow.length - 1)]; await saveAll(); renderAdmin(); toast(`Đơn ${o.id}: ${statusLabel(o.status)}.`);
   }
-  if (target.dataset.cancelOrder) { const o = orders.find(x => x.id === target.dataset.cancelOrder); o.status = 'canceled'; saveAll(); renderAdmin(); }
-  if (target.dataset.toggleUser) { const u = users.find(x => x.id === Number(target.dataset.toggleUser)); u.status = u.status === 'active' ? 'locked' : 'active'; saveAll(); renderAdmin(); }
+  if (target.dataset.cancelOrder) { const o = orders.find(x => x.id === target.dataset.cancelOrder); o.status = 'canceled'; await saveAll(); renderAdmin(); }
+  if (target.dataset.toggleUser) { const u = users.find(x => x.id === Number(target.dataset.toggleUser)); u.status = u.status === 'active' ? 'locked' : 'active'; await saveAll(); renderAdmin(); }
   if (target.dataset.exportReport !== undefined) { toast('Báo cáo CSV mô phỏng đã được chuẩn bị.', 'Xuất báo cáo'); }
+  if (target.dataset.exportStore !== undefined) {
+    const blob = new Blob([JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), ...storePayload() }, null, 2)], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `uef-shop-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+    toast('Đã xuất bản sao toàn bộ dữ liệu cửa hàng.', 'Sao lưu dữ liệu');
+  }
+  if (target.dataset.reloadStore !== undefined) { await loadAuthoritativeData(); toast('Đã tải lại dữ liệu từ thư mục dự án.'); }
 });
 
-document.addEventListener('submit', event => {
+document.addEventListener('submit', async event => {
   event.preventDefault();
   if (event.target.id === 'loginForm') {
     const email = document.querySelector('#loginEmail').value.trim(); const password = document.querySelector('#loginPassword').value;
@@ -440,30 +658,96 @@ document.addEventListener('submit', event => {
     profile.name = document.querySelector('#profileName').value.trim(); profile.phone = document.querySelector('#profilePhone').value.trim(); profile.email = document.querySelector('#profileEmail').value.trim(); session.name = profile.name; session.email = profile.email; saveStore('uef_profile', profile); saveStore('uef_session', session); render(); toast('Thông tin cá nhân đã được cập nhật.');
   }
   if (event.target.id === 'addressForm') { profile.address = document.querySelector('#profileAddress').value.trim(); saveStore('uef_profile', profile); checkoutData.address = profile.address; renderAccount(); toast('Địa chỉ mặc định đã được cập nhật.'); }
-  if (event.target.id === 'addProductForm') {
-    const nextId = Math.max(...products.map(p => p.id)) + 1;
-    products.push({ id: nextId, name: document.querySelector('#newProductName').value.trim(), category: document.querySelector('#newProductCategory').value, price: Number(document.querySelector('#newProductPrice').value), oldPrice: null, stock: Number(document.querySelector('#newProductStock').value), badge: 'Mới', sprite: [0, 0], color: 'Kem', sizes: ['S','M','L'], visible: true, description: 'Sản phẩm mới được thêm từ trang quản trị.' });
-    adminAddOpen = false; saveAll(); renderAdmin(); toast('Sản phẩm mới đã được thêm.');
+  if (event.target.id === 'studioForm') {
+    try {
+      const heroFile = document.querySelector('#siteHeroFile').files[0];
+      const catalogFile = document.querySelector('#siteCatalogFile').files[0];
+      siteSettings = {
+        shopName: document.querySelector('#siteShopName').value.trim(),
+        announcement: document.querySelector('#siteAnnouncement').value.trim(),
+        announcementLink: document.querySelector('#siteAnnouncementLink').value.trim(),
+        heroLabel: document.querySelector('#siteHeroLabel').value.trim(),
+        heroBadge: document.querySelector('#siteHeroBadge').value.trim(),
+        heroTitleLine1: document.querySelector('#siteHeroTitleLine1').value.trim(),
+        heroTitleLine2: document.querySelector('#siteHeroTitleLine2').value.trim(),
+        heroDescription: document.querySelector('#siteHeroDescription').value.trim(),
+        heroButton: document.querySelector('#siteHeroButton').value.trim(),
+        heroImage: heroFile ? await uploadImage(heroFile) : document.querySelector('#siteHeroImage').value.trim(),
+        catalogEyebrow: document.querySelector('#siteCatalogEyebrow').value.trim(),
+        catalogTitle: document.querySelector('#siteCatalogTitle').value.trim(),
+        catalogImage: catalogFile ? await uploadImage(catalogFile) : document.querySelector('#siteCatalogImage').value.trim(),
+        accentColor: document.querySelector('#siteAccentColor').value,
+        hotColor: document.querySelector('#siteHotColor').value
+      };
+      await saveAll();
+      applySiteSettings();
+      renderAdmin();
+      toast('Giao diện, màu sắc và banner đã được cập nhật.');
+    } catch (error) { toast(error.message, 'Không thể lưu'); }
+  }
+  if (event.target.id === 'productEditorForm') {
+    try {
+      const editing = products.find(product => product.id === editingProductId);
+      const uploadedFile = document.querySelector('#productImageFile').files[0];
+      const image = uploadedFile ? await uploadImage(uploadedFile) : document.querySelector('#productImagePath').value.trim();
+      const values = {
+        name: document.querySelector('#productName').value.trim(),
+        category: document.querySelector('#productCategory').value,
+        price: Number(document.querySelector('#productPrice').value),
+        oldPrice: Number(document.querySelector('#productOldPrice').value) || null,
+        stock: Number(document.querySelector('#productStock').value),
+        badge: document.querySelector('#productBadge').value.trim(),
+        color: document.querySelector('#productColor').value.trim(),
+        sizes: document.querySelector('#productSizes').value.split(',').map(size => size.trim()).filter(Boolean),
+        description: document.querySelector('#productDescription').value.trim(),
+        image,
+        visible: editing ? editing.visible !== false : true,
+        sprite: editing?.sprite || [0, 0]
+      };
+      if (editing) Object.assign(editing, values);
+      else products.push({ id: products.length ? Math.max(...products.map(product => product.id)) + 1 : 1, ...values });
+      adminAddOpen = false;
+      editingProductId = null;
+      await saveAll();
+      renderAdmin();
+      toast(editing ? 'Sản phẩm đã được cập nhật.' : 'Sản phẩm mới đã được thêm.');
+    } catch (error) { toast(error.message, 'Không thể lưu sản phẩm'); }
   }
 });
 
 document.addEventListener('input', event => {
   if (event.target.id === 'productSearch') { shopState.search = event.target.value; const grid = document.querySelector('#productGrid'); const list = filteredProducts(); grid.innerHTML = list.length ? list.map(productCard).join('') : '<div class="empty-state"><h3>Không tìm thấy sản phẩm</h3><p>Hãy thử từ khóa khác.</p></div>'; }
 });
-document.addEventListener('change', event => {
+document.addEventListener('change', async event => {
   if (event.target.id === 'categorySelect') { shopState.category = event.target.value; renderShop(); }
   if (event.target.id === 'sortSelect') { shopState.sort = event.target.value; renderShop(); }
+  if (event.target.id === 'dataImportFile' && event.target.files[0]) {
+    try {
+      const imported = JSON.parse(await event.target.files[0].text());
+      if (!imported.site || !Array.isArray(imported.products) || !Array.isArray(imported.orders) || !Array.isArray(imported.users)) throw new Error('Tệp JSON không đúng cấu trúc UEF SHOP.');
+      siteSettings = { ...defaultSiteSettings, ...imported.site };
+      products = imported.products;
+      orders = imported.orders;
+      users = imported.users;
+      await saveAll();
+      applySiteSettings();
+      renderAdmin();
+      toast('Đã nhập và lưu toàn bộ dữ liệu từ tệp JSON.', 'Khôi phục dữ liệu');
+    } catch (error) { toast(error.message, 'Không thể nhập dữ liệu'); }
+  }
 });
 
 document.querySelector('#cartBtn').addEventListener('click', openCart);
-document.querySelector('#sessionBtn').addEventListener('click', () => session ? (location.hash = session.role === 'admin' ? '#/admin' : '#/account') : openAuth());
+document.querySelector('#sessionBtn').addEventListener('click', () => session ? (session.role === 'admin' ? (location.href = './admin.html') : (location.hash = '#/account')) : openAuth());
 document.querySelector('#searchFocusBtn').addEventListener('click', () => { location.hash = '#/shop'; setTimeout(() => { document.querySelector('#catalog')?.scrollIntoView(); document.querySelector('#productSearch')?.focus(); }, 80); });
 overlay.addEventListener('click', closeAll);
 document.addEventListener('keydown', event => { if (event.key === 'Escape') closeAll(); if ((event.key === 'Enter' || event.key === ' ') && event.target.dataset.product) { event.preventDefault(); openProduct(event.target.dataset.product); } });
 window.addEventListener('hashchange', render);
 
 if (!location.hash) location.hash = '#/shop';
+applySiteSettings();
 render();
+void loadAuthoritativeData();
 
 function registerWebMcpTools() {
   const context = document.modelContext;

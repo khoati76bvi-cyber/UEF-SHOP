@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#d9ff00" />
+    <meta name="description" content="UEF SHOP CMS - Quản trị toàn bộ nội dung và dữ liệu cửa hàng." />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23d9ff00'/%3E%3Cpath d='M15 15v21c0 10 6 15 17 15s17-5 17-15V15h-9v21c0 5-3 7-8 7s-8-2-8-7V15z' fill='%230b0b0b'/%3E%3C/svg%3E" />
+    <title>UEF SHOP CMS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./admin.css" />
+  </head>
+  <body>
+    <section class="login-screen" id="loginScreen">
+      <div class="login-brand"><span>U</span><div><strong>UEF SHOP</strong><small>CONTENT MANAGEMENT SYSTEM</small></div></div>
+      <form class="login-card" id="adminLoginForm">
+        <span class="kicker">KHU VỰC QUẢN TRỊ</span>
+        <h1>Điều hành cửa hàng</h1>
+        <p>Đăng nhập để chỉnh sửa toàn bộ giao diện, nội dung và dữ liệu website.</p>
+        <label>Email<input id="adminEmail" type="email" value="admin@demo.vn" autocomplete="username" required /></label>
+        <label>Mật khẩu<input id="adminPassword" type="password" value="admin123" autocomplete="current-password" required /></label>
+        <p class="form-error" id="loginError" role="alert"></p>
+        <button class="button primary full" type="submit">Đăng nhập quản trị</button>
+        <a class="back-link" href="./index.html#/shop">← Quay lại cửa hàng</a>
+      </form>
+    </section>
+
+    <div class="cms" id="cmsApp" hidden>
+      <aside class="cms-sidebar">
+        <a class="cms-brand" href="./index.html#/shop"><span id="cmsLogo">U</span><div><strong id="cmsShopName">UEF SHOP</strong><small>CMS / CONTROL CENTER</small></div></a>
+        <nav id="cmsNav" aria-label="Điều hướng quản trị"></nav>
+        <div class="sidebar-footer">
+          <span class="connection"><i id="connectionDot"></i><b id="connectionText">Đang kết nối</b></span>
+          <button id="logoutButton" type="button">Đăng xuất</button>
+        </div>
+      </aside>
+
+      <main class="cms-main">
+        <header class="cms-topbar">
+          <div><span class="kicker" id="pageKicker">UEF SHOP CMS</span><h1 id="pageTitle">Tổng quan</h1></div>
+          <div class="topbar-actions">
+            <span class="save-state" id="saveState">Chưa có thay đổi</span>
+            <a class="button secondary" href="./index.html#/shop" target="_blank" rel="noopener">Mở cửa hàng ↗</a>
+          </div>
+        </header>
+        <div class="cms-content" id="cmsContent"></div>
+      </main>
+    </div>
+
+    <div class="toast-region" id="toastRegion" aria-live="polite"></div>
+    <div class="modal-backdrop" id="modalBackdrop" hidden></div>
+    <section class="cms-modal" id="cmsModal" role="dialog" aria-modal="true" hidden></section>
+    <script src="./admin.js" defer></script>
+  </body>
+</html>

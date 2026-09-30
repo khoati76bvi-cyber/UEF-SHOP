@@ -1,0 +1,389 @@
+{
+  "version": 1,
+  "updatedAt": "2026-09-26T02:59:26.313Z",
+  "site": {
+    "shopName": "UEF SHOP",
+    "logoLetter": "U",
+    "shopTagline": "ONLINE STORE / EST. 2026",
+    "announcement": "THIẾT KẾ HIỆU NĂNG CHO NHỊP SỐNG SINH VIÊN.",
+    "announcementLink": "KHÁM PHÁ NGAY →",
+    "navHome": "TRANG CHỦ",
+    "navProducts": "SẢN PHẨM",
+    "navSupport": "HỖ TRỢ",
+    "heroLabel": "FLASH SALE",
+    "heroBadge": "HOT DEAL",
+    "heroTitleLine1": "DEAL ĐỈNH CHO",
+    "heroTitleLine2": "NHỊP SỐNG UEF",
+    "heroDescription": "Thiết kế năng động cho lịch học, hoạt động câu lạc bộ và những buổi xuống phố.",
+    "heroButton": "XEM TẤT CẢ DEAL",
+    "heroImage": "./assets/catalog-products.png",
+    "catalogEyebrow": "TRANG CHỦ / BỘ SƯU TẬP 2026",
+    "catalogTitle": "TẤT CẢ SẢN PHẨM",
+    "catalogImage": "./assets/catalog-products.png",
+    "marquee": "UEF SHOP · SĂN DEAL · PHỐI CHẤT · CÒN HÀNG · CAMPUS DROP ·",
+    "benefits": [
+      {
+        "title": "Giao hàng toàn quốc",
+        "text": "Theo dõi trạng thái đơn theo thời gian thực."
+      },
+      {
+        "title": "Thanh toán linh hoạt",
+        "text": "COD, thẻ ngân hàng hoặc ví điện tử."
+      },
+      {
+        "title": "Hỗ trợ tận tâm",
+        "text": "Tư vấn kích cỡ và đổi trả trong 14 ngày."
+      }
+    ],
+    "footerDescription": "Thời trang năng động cho học tập, hoạt động ngoại khóa và nhịp sống thành thị của sinh viên UEF.",
+    "footerSupportTitle": "Hỗ trợ",
+    "footerSupportLink1": "Hướng dẫn mua hàng",
+    "footerSupportLink2": "Tra cứu đơn hàng",
+    "footerPolicyTitle": "Chính sách",
+    "footerPolicyLink1": "Đổi trả 14 ngày",
+    "footerPolicyLink2": "Bảo mật thông tin",
+    "copyright": "© 2026 UEF SHOP",
+    "footerNote": "Demo môn Công nghệ phần mềm",
+    "accentColor": "#99ff00",
+    "hotColor": "#ff007a",
+    "inkColor": "#0a0a0a",
+    "paperColor": "#f4f4ef",
+    "customCss": "",
+    "navAdmin": "QUẢN TRỊ"
+  },
+  "products": [
+    {
+      "id": 1,
+      "name": "Áo thun Oversized Essential",
+      "category": "Áo",
+      "price": 329000,
+      "oldPrice": 399000,
+      "stock": 24,
+      "badge": "Bán chạy",
+      "sprite": [
+        0,
+        0
+      ],
+      "image": "",
+      "color": "Kem",
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "visible": true,
+      "description": "Áo thun cotton 240gsm, phom rộng hiện đại và bề mặt vải mềm mịn."
+    },
+    {
+      "id": 2,
+      "name": "Áo khoác Denim Black",
+      "category": "Áo khoác",
+      "price": 899000,
+      "oldPrice": 1099000,
+      "stock": 12,
+      "badge": "Mới",
+      "sprite": [
+        33.333,
+        0
+      ],
+      "image": "",
+      "color": "Đen",
+      "sizes": [
+        "M",
+        "L",
+        "XL"
+      ],
+      "visible": true,
+      "description": "Denim dày vừa, xử lý wash đen và đường may chắc chắn cho phong cách đường phố."
+    },
+    {
+      "id": 3,
+      "name": "Quần Jeans Straight Blue",
+      "category": "Quần",
+      "price": 679000,
+      "oldPrice": null,
+      "stock": 18,
+      "badge": "",
+      "sprite": [
+        66.666,
+        0
+      ],
+      "image": "",
+      "color": "Xanh",
+      "sizes": [
+        "28",
+        "29",
+        "30",
+        "31",
+        "32"
+      ],
+      "visible": true,
+      "description": "Quần jeans ống suông, cạp vừa và chất vải có độ co giãn nhẹ."
+    },
+    {
+      "id": 4,
+      "name": "Đầm Midi Emerald",
+      "category": "Đầm",
+      "price": 749000,
+      "oldPrice": 899000,
+      "stock": 8,
+      "badge": "Giới hạn",
+      "sprite": [
+        100,
+        0
+      ],
+      "image": "",
+      "color": "Xanh lá",
+      "sizes": [
+        "S",
+        "M",
+        "L"
+      ],
+      "visible": true,
+      "description": "Đầm midi tay phồng, thân váy rủ tự nhiên và sắc xanh nổi bật."
+    },
+    {
+      "id": 5,
+      "name": "Hoodie Everyday Beige",
+      "category": "Áo",
+      "price": 629000,
+      "oldPrice": null,
+      "stock": 20,
+      "badge": "",
+      "sprite": [
+        0,
+        100
+      ],
+      "image": "",
+      "color": "Be",
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "visible": true,
+      "description": "Hoodie nỉ bông thoáng ấm, form unisex và túi kangaroo tiện dụng."
+    },
+    {
+      "id": 6,
+      "name": "Sneaker Minimal White",
+      "category": "Giày",
+      "price": 1099000,
+      "oldPrice": 1299000,
+      "stock": 10,
+      "badge": "Hot",
+      "sprite": [
+        33.333,
+        100
+      ],
+      "image": "",
+      "color": "Trắng",
+      "sizes": [
+        "37",
+        "38",
+        "39",
+        "40",
+        "41",
+        "42"
+      ],
+      "visible": true,
+      "description": "Sneaker da tổng hợp tối giản, đế êm và dễ phối với nhiều phong cách."
+    },
+    {
+      "id": 7,
+      "name": "Túi Crossbody Leather",
+      "category": "Phụ kiện",
+      "price": 589000,
+      "oldPrice": null,
+      "stock": 16,
+      "badge": "",
+      "sprite": [
+        66.666,
+        100
+      ],
+      "image": "",
+      "color": "Nâu",
+      "sizes": [
+        "Một kích cỡ"
+      ],
+      "visible": true,
+      "description": "Túi đeo chéo dáng gọn với nhiều ngăn và dây đeo điều chỉnh linh hoạt."
+    },
+    {
+      "id": 8,
+      "name": "Mũ Cap Washed Charcoal",
+      "category": "Phụ kiện",
+      "price": 269000,
+      "oldPrice": 319000,
+      "stock": 30,
+      "badge": "-15%",
+      "sprite": [
+        100,
+        100
+      ],
+      "image": "",
+      "color": "Xám",
+      "sizes": [
+        "Một kích cỡ"
+      ],
+      "visible": true,
+      "description": "Mũ lưỡi trai washed, khóa kim loại phía sau và độ ôm thoải mái."
+    }
+  ],
+  "orders": [
+    {
+      "id": "UEF-566307",
+      "date": "26/9/2026",
+      "customer": "Nguyễn Minh Anh",
+      "email": "user@demo.vn",
+      "total": 1907000,
+      "status": "pending",
+      "payment": "COD",
+      "items": [
+        {
+          "productId": 1,
+          "qty": 1,
+          "size": "S"
+        },
+        {
+          "productId": 2,
+          "qty": 1,
+          "size": "M"
+        },
+        {
+          "productId": 3,
+          "qty": 1,
+          "size": "28"
+        }
+      ]
+    },
+    {
+      "id": "UEF-795803",
+      "date": "25/9/2026",
+      "customer": "Nguyễn Hồ Lan",
+      "email": "admin@demo.vn",
+      "total": 1228000,
+      "status": "pending",
+      "payment": "COD",
+      "items": [
+        {
+          "productId": 1,
+          "qty": 1,
+          "size": "S"
+        },
+        {
+          "productId": 2,
+          "qty": 1,
+          "size": "M"
+        }
+      ]
+    },
+    {
+      "id": "UEF-260918",
+      "date": "18/09/2026",
+      "customer": "Nguyễn Minh Anh",
+      "email": "user@demo.vn",
+      "total": 1008000,
+      "status": "shipped",
+      "payment": "Ví điện tử",
+      "items": [
+        {
+          "productId": 1,
+          "qty": 1,
+          "size": "M"
+        },
+        {
+          "productId": 5,
+          "qty": 1,
+          "size": "L"
+        }
+      ]
+    },
+    {
+      "id": "UEF-260914",
+      "date": "14/09/2026",
+      "customer": "Trần Ngọc Lan",
+      "email": "lan@example.com",
+      "total": 1428000,
+      "status": "processing",
+      "payment": "COD",
+      "items": [
+        {
+          "productId": 4,
+          "qty": 1,
+          "size": "M"
+        },
+        {
+          "productId": 3,
+          "qty": 1,
+          "size": "29"
+        }
+      ]
+    },
+    {
+      "id": "UEF-260910",
+      "date": "10/09/2026",
+      "customer": "Lê Quốc Bảo",
+      "email": "bao@example.com",
+      "total": 1099000,
+      "status": "completed",
+      "payment": "Thẻ ngân hàng",
+      "items": [
+        {
+          "productId": 6,
+          "qty": 1,
+          "size": "41"
+        }
+      ]
+    },
+    {
+      "id": "UEF-260903",
+      "date": "03/09/2026",
+      "customer": "Phạm Hà My",
+      "email": "my@example.com",
+      "total": 858000,
+      "status": "canceled",
+      "payment": "COD",
+      "items": [
+        {
+          "productId": 1,
+          "qty": 1,
+          "size": "S"
+        },
+        {
+          "productId": 7,
+          "qty": 1,
+          "size": "Một kích cỡ"
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "id": 1,
+      "name": "ĐÀO NHẬT KHIÊM",
+      "email": "user@demo.vn",
+      "joined": "12/08/2026",
+      "orders": 3,
+      "status": "active"
+    },
+    {
+      "id": 2,
+      "name": "NGUYỄN TRIÊU VY",
+      "email": "lan@example.com",
+      "joined": "22/08/2026",
+      "orders": 2,
+      "status": "active"
+    },
+    {
+      "id": 3,
+      "name": "Lê Quốc Bảo",
+      "email": "bao@example.com",
+      "joined": "01/09/2026",
+      "orders": 1,
+      "status": "active"
+    }
+  ]
+}

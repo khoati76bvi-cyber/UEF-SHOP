@@ -13,17 +13,16 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <div class="announcement"><span>THIẾT KẾ HIỆU NĂNG CHO NHỊP SỐNG SINH VIÊN.</span><a href="#catalog">KHÁM PHÁ NGAY →</a></div>
+    <div class="announcement"><span id="announcementText">THIẾT KẾ HIỆU NĂNG CHO NHỊP SỐNG SINH VIÊN.</span><a id="announcementLink" href="#catalog">KHÁM PHÁ NGAY →</a></div>
     <header class="site-header">
       <a class="brand" href="#/shop" aria-label="UEF SHOP - Trang chủ">
-        <span class="brand-mark">U</span>
-        <span class="brand-copy"><strong>UEF</strong><small>SHOP / EST. 2026</small></span>
+        <span class="brand-mark" data-logo-letter>U</span>
+        <span class="brand-copy"><strong data-shop-name>UEF SHOP</strong><small data-shop-tagline>ONLINE STORE / EST. 2026</small></span>
       </a>
       <nav class="main-nav" aria-label="Điều hướng chính">
-        <a href="#/shop" data-route-link="shop">TRANG CHỦ</a>
-        <a href="#catalog">SẢN PHẨM</a>
-        <a href="#benefits">HỖ TRỢ</a>
-        <a href="#/admin" data-route-link="admin">QUẢN TRỊ</a>
+        <a id="navHome" href="#/shop" data-route-link="shop">TRANG CHỦ</a>
+        <a id="navProducts" href="#catalog">SẢN PHẨM</a>
+        <a id="navSupport" href="#benefits">HỖ TRỢ</a>
       </nav>
       <div class="header-actions">
         <button class="header-box icon-button" id="searchFocusBtn" aria-label="Tìm kiếm sản phẩm" title="Tìm kiếm">TÌM KIẾM</button>
@@ -39,14 +38,14 @@
 
     <footer class="site-footer">
       <div>
-        <a class="brand footer-brand" href="#/shop"><span class="brand-mark">U</span><span class="brand-copy"><strong>UEF</strong><small>SHOP / EST. 2026</small></span></a>
-        <p>Thời trang năng động cho học tập, hoạt động ngoại khóa và nhịp sống thành thị của sinh viên UEF.</p>
+        <a class="brand footer-brand" href="#/shop"><span class="brand-mark" data-logo-letter>U</span><span class="brand-copy"><strong data-shop-name>UEF SHOP</strong><small data-shop-tagline>ONLINE STORE / EST. 2026</small></span></a>
+        <p id="footerDescription">Thời trang năng động cho học tập, hoạt động ngoại khóa và nhịp sống thành thị của sinh viên UEF.</p>
       </div>
       <div class="footer-links">
-        <div><strong>Hỗ trợ</strong><a href="#/shop">Hướng dẫn mua hàng</a><a href="#/account">Tra cứu đơn hàng</a></div>
-        <div><strong>Chính sách</strong><a href="#/shop">Đổi trả 14 ngày</a><a href="#/shop">Bảo mật thông tin</a></div>
+        <div><strong id="footerSupportTitle">Hỗ trợ</strong><a id="footerSupportLink1" href="#/shop">Hướng dẫn mua hàng</a><a id="footerSupportLink2" href="#/account">Tra cứu đơn hàng</a></div>
+        <div><strong id="footerPolicyTitle">Chính sách</strong><a id="footerPolicyLink1" href="#/shop">Đổi trả 14 ngày</a><a id="footerPolicyLink2" href="#/shop">Bảo mật thông tin</a></div>
       </div>
-      <div class="footer-bottom"><span>© 2026 UEF SHOP</span><span>Demo môn Công nghệ phần mềm</span></div>
+      <div class="footer-bottom"><span id="copyrightText">© 2026 UEF SHOP</span><span id="footerNote">Demo môn Công nghệ phần mềm</span></div>
     </footer>
 
     <div class="overlay" id="overlay" hidden></div>
@@ -70,7 +69,6 @@
       <div class="demo-accounts">
         <span>Tài khoản demo</span>
         <button type="button" data-demo-login="customer">Khách hàng</button>
-        <button type="button" data-demo-login="admin">Quản trị viên</button>
       </div>
     </section>
 

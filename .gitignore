@@ -1,2 +1,8 @@
 nova-wear-site.tar.gz
 .sites-runtime/
+node_modules/
+document-work/
+.env
+.env.*
+*.log
+dist/uploads/
